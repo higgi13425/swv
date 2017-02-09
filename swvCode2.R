@@ -14,10 +14,9 @@ library(corrr)
 
 #clear environment and set working directory
 rm(list=ls())
-setwd("~/Documents/Rcode/SWVultrasound")
 
 #read in excel file
-df<- read_excel("RTNBS-30-SW-TIDYfull.xlsx", sheet=1)
+df<- read_excel("RTNBS30_SWV_tidy.xlsx", sheet=1)
 
 #convert swv measurements to numeric
 df$swv<-as.numeric(df$swv)
@@ -86,27 +85,27 @@ coefs
 
 ################################
 # ttests
-#3 vs 6, using only 12 oclock
+#3 vs 6, using only 12 oclock, all strains
 df12 %>% filter(weeks>2) %>% group_by(weeks) %>% mutate(as.factor(weeks)) %>% 
 ntbt(t.test, swv ~ weeks)
 
-#0 vs 1, using only 12 oclock
+#0 vs 1, using only 12 oclock, , all strains
 df12 %>% filter(weeks<3) %>% group_by(weeks) %>% mutate(as.factor(weeks)) %>% 
   ntbt(t.test, swv ~ weeks)
 
-#0 vs 6, using only 12 oclock
+#0 vs 6, using only 12 oclock, all strains
 df12 %>% filter(weeks<1 | weeks>4) %>% group_by(weeks) %>% mutate(as.factor(weeks)) %>% 
   ntbt(t.test, swv ~ weeks)
 
-#1 vs 3, using only 12 oclock
+#1 vs 3, using only 12 oclock, all strains
 df12 %>% filter(weeks==1 | weeks==3)  %>% group_by(weeks) %>% mutate(as.factor(weeks)) %>% 
   ntbt(t.test, swv ~ weeks)
 
-#0 vs 3, using only 12 oclock
+#0 vs 3, using only 12 oclock, all strains
 df12 %>% filter(weeks==0 | weeks==3)  %>% group_by(weeks) %>% mutate(as.factor(weeks)) %>% 
   ntbt(t.test, swv ~ weeks)
 
-#1 vs 6, using only 12 oclock
+#1 vs 6, using only 12 oclock, all strains
 df12 %>% filter(weeks==1 | weeks==6)  %>% group_by(weeks) %>% mutate(as.factor(weeks)) %>% 
   ntbt(t.test, swv ~ weeks)
 
@@ -115,8 +114,12 @@ df12sum <- df12 %>%  group_by(Animal) %>%
   mutate(meanswv= mean(swv)) %>% 
   filter(trial==1)
 
-#Beeswarm-Box plots swv by Weeks
-g <- ggplot(df12sum, aes(factor(weeks), meanswv))
+#means by strain
+df12 %>% group_by(weeks, strain) %>% summarize(meanswv=mean(swv))
+
+#Beeswarm-Box plots swv by Weeks, select strain
+df12graph <-df12sum %>% filter(strain==10)
+g <- ggplot(df12graph, aes(factor(weeks), swv))
 g +geom_boxplot() + geom_quasirandom(varwidth = T, cex=1.5) +   ggtitle("Shear Wave Speed by Weeks of TNBS Treatment") +
   labs(x="Weeks of TNBS Treatments") + labs(y="Shear Wave Speed (m/sec") +
   theme(plot.title = element_text(family = "Arial", color = "black", face="bold", size=20, hjust=0.5)) +
@@ -155,10 +158,10 @@ g +geom_boxplot() + geom_quasirandom(varwidth = T, cex=1.5) +   ggtitle("CTGF by
   theme(axis.title = element_text(family = "Arial", color = "black", face="bold", size=16)) +
   stat_summary(fun.y=mean, geom="point", shape=18, size=15, color="red", alpha= 0.5)
 
-#Beeswarm-Box plots TGFb by Weeks
+#Beeswarm-Box plots TGFb by Week
 g <- ggplot(df12sum, aes(factor(weeks),  TGF))
 g +geom_boxplot() + geom_quasirandom(varwidth = T, cex=1.5) +   ggtitle("TGFb by Weeks of TNBS Treatment") +
-  labs(x="Weeks of TNBS Treatments") + labs(y="CTGF") +
+  labs(x="Weeks of TNBS Treatments") + labs(y="TGFb") +
   theme(plot.title = element_text(family = "Arial", color = "black", face="bold", size=20, hjust=0.5)) +
   theme(axis.title = element_text(family = "Arial", color = "black", face="bold", size=16)) +
   stat_summary(fun.y=mean, geom="point", shape=18, size=15, color="red", alpha= 0.5)
@@ -166,7 +169,7 @@ g +geom_boxplot() + geom_quasirandom(varwidth = T, cex=1.5) +   ggtitle("TGFb by
 #Beeswarm-Box plots Akt3 by Weeks
 g <- ggplot(df12sum, aes(factor(weeks),  AKT3))
 g +geom_boxplot() + geom_quasirandom(varwidth = T, cex=1.5) +   ggtitle("Akt3 by Weeks of TNBS Treatment") +
-  labs(x="Weeks of TNBS Treatments") + labs(y="CTGF") +
+  labs(x="Weeks of TNBS Treatments") + labs(y="Akt3") +
   theme(plot.title = element_text(family = "Arial", color = "black", face="bold", size=20, hjust=0.5)) +
   theme(axis.title = element_text(family = "Arial", color = "black", face="bold", size=16)) +
   stat_summary(fun.y=mean, geom="point", shape=18, size=15, color="red", alpha= 0.5)
@@ -174,11 +177,18 @@ g +geom_boxplot() + geom_quasirandom(varwidth = T, cex=1.5) +   ggtitle("Akt3 by
 #Beeswarm-Box plots Axl by Weeks
 g <- ggplot(df12sum, aes(factor(weeks),  AXL))
 g +geom_boxplot() + geom_quasirandom(varwidth = T, cex=1.5) +   ggtitle("Axl by Weeks of TNBS Treatment") +
-  labs(x="Weeks of TNBS Treatments") + labs(y="CTGF") +
+  labs(x="Weeks of TNBS Treatments") + labs(y="AXL") +
   theme(plot.title = element_text(family = "Arial", color = "black", face="bold", size=20, hjust=0.5)) +
   theme(axis.title = element_text(family = "Arial", color = "black", face="bold", size=16)) +
   stat_summary(fun.y=mean, geom="point", shape=18, size=15, color="red", alpha= 0.5)
 
+#Beeswarm-Box plots aSMA by Weeks
+g <- ggplot(df12sum, aes(factor(weeks),  aSMA_prot))
+g +geom_boxplot() + geom_quasirandom(varwidth = T, cex=1.5) +   ggtitle("aSMA by Weeks of TNBS Treatment") +
+  labs(x="Weeks of TNBS Treatments") + labs(y="aSMA") +
+  theme(plot.title = element_text(family = "Arial", color = "black", face="bold", size=20, hjust=0.5)) +
+  theme(axis.title = element_text(family = "Arial", color = "black", face="bold", size=16)) +
+  stat_summary(fun.y=mean, geom="point", shape=18, size=15, color="red", alpha= 0.5)
 
 
 
